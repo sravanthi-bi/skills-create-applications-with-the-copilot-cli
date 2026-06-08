@@ -27,7 +27,7 @@ describe('Calculator core functions', () => {
   });
 
   test('invalid operation throws', () => {
-    expect(() => calculate('pow', 2, 3)).toThrow('Unsupported operation');
+    expect(() => calculate('unknown', 2, 3)).toThrow('Unsupported operation');
   });
 
   test('toNumber validates numeric input', () => {

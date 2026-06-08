@@ -28,6 +28,20 @@ function toNumber(value) {
   return n;
 }
 
+function modulo(a, b) {
+  if (b === 0) throw new Error('Division by zero');
+  return a % b;
+}
+
+function power(base, exponent) {
+  return Math.pow(base, exponent);
+}
+
+function squareRoot(n) {
+  if (n < 0) throw new Error('Square root of negative number');
+  return Math.sqrt(n);
+}
+
 function calculate(op, a, b) {
   switch (op) {
     case 'add':
@@ -46,6 +60,16 @@ function calculate(op, a, b) {
     case '/':
       if (b === 0) throw new Error('Division by zero');
       return a / b;
+    case 'mod':
+    case '%':
+      if (b === 0) throw new Error('Division by zero');
+      return modulo(a, b);
+    case 'pow':
+    case '^':
+      return power(a, b);
+    case 'sqrt':
+    case '√':
+      return squareRoot(a);
     default:
       throw new Error(`Unsupported operation: ${op}`);
   }
@@ -53,8 +77,12 @@ function calculate(op, a, b) {
 
 function printUsage() {
   console.log('Usage: node src/calculator.js <operation> <num1> <num2>');
-  console.log('Operations: add(+), subtract(-), multiply(*), divide(/)');
-  console.log('Example: node src/calculator.js add 2 3');
+  console.log('Operations: add(+), subtract(-), multiply(*), divide(/), mod(%), pow(^), sqrt');
+  console.log('Examples:');
+  console.log('  node src/calculator.js add 2 3');
+  console.log('  node src/calculator.js mod 10 3');
+  console.log('  node src/calculator.js pow 2 5');
+  console.log('  node src/calculator.js sqrt 9');
 }
 
 async function interactive() {
@@ -62,12 +90,19 @@ async function interactive() {
   const question = (q) => new Promise((res) => rl.question(q, res));
 
   try {
-    const op = (await question('Operation (add, subtract, multiply, divide or + - * /): ')).trim();
+    const op = (await question('Operation (add, subtract, multiply, divide, mod, pow, sqrt or + - * / % ^ √): ')).trim();
     const aRaw = (await question('First number: ')).trim();
-    const bRaw = (await question('Second number: ')).trim();
     const a = toNumber(aRaw);
-    const b = toNumber(bRaw);
-    const result = calculate(op, a, b);
+    let result;
+
+    if (op === 'sqrt' || op === '√') {
+      result = squareRoot(a);
+    } else {
+      const bRaw = (await question('Second number: ')).trim();
+      const b = toNumber(bRaw);
+      result = calculate(op, a, b);
+    }
+
     console.log(`Result: ${result}`);
   } catch (err) {
     console.error('Error:', err.message);
@@ -86,8 +121,8 @@ async function main() {
     return;
   }
 
-  if (!arg1 || !arg2) {
-    console.error('Error: Two numeric arguments are required.');
+  if (!arg1 || (!arg2 && op !== 'sqrt' && op !== '√')) {
+    console.error('Error: Two numeric arguments are required (except for sqrt).');
     printUsage();
     process.exitCode = 1;
     return;
@@ -95,8 +130,15 @@ async function main() {
 
   try {
     const a = toNumber(arg1);
-    const b = toNumber(arg2);
-    const result = calculate(op, a, b);
+    let result;
+
+    if (op === 'sqrt' || op === '√') {
+      result = calculate(op, a);
+    } else {
+      const b = toNumber(arg2);
+      result = calculate(op, a, b);
+    }
+
     console.log(result);
   } catch (err) {
     console.error('Error:', err.message);
@@ -104,7 +146,8 @@ async function main() {
   }
 }
 
-module.exports = { calculate, toNumber, main };
+
+module.exports = { calculate, toNumber, main, modulo, power, squareRoot };
 
 if (require.main === module) {
   main();
