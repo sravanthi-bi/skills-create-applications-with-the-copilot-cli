@@ -104,6 +104,8 @@ async function main() {
   }
 }
 
+module.exports = { calculate, toNumber, main };
+
 if (require.main === module) {
   main();
 }
